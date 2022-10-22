@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/opentracing/opentracing-go"
+	"github.com/uber/jaeger-client-go"
 	"github.com/uber/jaeger-client-go/config"
 	"go.uber.org/zap"
 )
@@ -32,6 +33,11 @@ func TracingMiddleware(next http.Handler) http.Handler {
 		wrapper := NewResponseWrapper(w)
 
 		r = r.WithContext(ctx)
+
+		if spanContext, ok := span.Context().(jaeger.SpanContext); ok {
+			w.Header().Add("x-trace-id", spanContext.TraceID().String())
+		}
+
 		next.ServeHTTP(wrapper, r)
 	})
 }
