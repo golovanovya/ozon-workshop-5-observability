@@ -36,6 +36,9 @@ func main() {
 
 	http.Handle("/fibonacci", handler)
 
+	// sugaredLogger := logger.Sugar()
+	// sugaredLogger.Infow("starting http server", "port", *port)
+
 	logger.Info("starting http server", zap.Int("port", *port))
 	err := http.ListenAndServe(fmt.Sprintf(":%d", *port), nil)
 	if err != nil {
