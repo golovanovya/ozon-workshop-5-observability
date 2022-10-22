@@ -14,10 +14,13 @@ func LoggingMiddleware(logger *zap.Logger, next http.Handler) http.Handler {
 			zap.String("query", r.URL.RawQuery),
 		)
 
-		next.ServeHTTP(w, r)
+		wrapper := NewResponseWrapper(w)
+
+		next.ServeHTTP(wrapper, r)
 
 		logger.Info(
 			"http request complete",
+			zap.Int("code", wrapper.statusCode),
 		)
 	})
 }
