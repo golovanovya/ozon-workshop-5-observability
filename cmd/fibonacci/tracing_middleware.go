@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/opentracing/opentracing-go"
+	"github.com/opentracing/opentracing-go/ext"
 	"github.com/uber/jaeger-client-go"
 	"github.com/uber/jaeger-client-go/config"
 	"go.uber.org/zap"
@@ -27,7 +28,16 @@ func TracingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		span, ctx := opentracing.StartSpanFromContext(ctx, "http request "+r.URL.Path)
+		incomingTrace, _ := opentracing.GlobalTracer().Extract(
+			opentracing.HTTPHeaders,
+			opentracing.HTTPHeadersCarrier(r.Header),
+		)
+
+		span, ctx := opentracing.StartSpanFromContext(
+			ctx,
+			"http request "+r.URL.Path,
+			ext.RPCServerOption(incomingTrace),
+		)
 		defer span.Finish()
 
 		wrapper := NewResponseWrapper(w)
