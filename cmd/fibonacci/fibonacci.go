@@ -8,6 +8,7 @@ import (
 
 func getNumber(ctx context.Context, n int) int {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "getNumber")
+	span.SetTag("n", n)
 	defer span.Finish()
 
 	switch n {
