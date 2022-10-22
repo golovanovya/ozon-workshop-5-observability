@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 
@@ -11,7 +10,8 @@ import (
 )
 
 var (
-	port = flag.Int("port", 8080, "the port to listen")
+	port      = flag.Int("port", 8080, "the port to listen")
+	develMode = flag.Bool("devel", false, "development mode")
 )
 
 func Handler() http.Handler {
@@ -30,18 +30,14 @@ func Handler() http.Handler {
 func main() {
 	flag.Parse()
 
-	// logger, err := zap.NewProduction()
-	logger, err := zap.NewDevelopment()
-	if err != nil {
-		log.Fatal("cannot init zap", err)
-	}
+	logger := initLogger()
 
 	handler := Handler()
 
 	http.Handle("/fibonacci", handler)
 
 	logger.Info("starting http server", zap.Int("port", *port))
-	err = http.ListenAndServe(fmt.Sprintf(":%d", *port), nil)
+	err := http.ListenAndServe(fmt.Sprintf(":%d", *port), nil)
 	if err != nil {
 		logger.Fatal("error starting http server", zap.Error(err))
 	}

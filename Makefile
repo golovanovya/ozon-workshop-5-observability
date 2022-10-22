@@ -1,6 +1,6 @@
 
 dev:
-	go run workshop5/cmd/fibonacci
+	go run workshop5/cmd/fibonacci -devel
 
 prod:
 	mkdir -p logs/data
