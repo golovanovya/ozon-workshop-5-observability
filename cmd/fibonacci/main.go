@@ -33,6 +33,7 @@ func main() {
 	logger := initLogger()
 
 	handler := Handler()
+	handler = LoggingMiddleware(logger, handler)
 
 	http.Handle("/fibonacci", handler)
 
