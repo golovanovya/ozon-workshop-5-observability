@@ -3,8 +3,11 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
+
+	"go.uber.org/zap"
 )
 
 var (
@@ -27,9 +30,19 @@ func Handler() http.Handler {
 func main() {
 	flag.Parse()
 
+	// logger, err := zap.NewProduction()
+	logger, err := zap.NewDevelopment()
+	if err != nil {
+		log.Fatal("cannot init zap", err)
+	}
+
 	handler := Handler()
 
 	http.Handle("/fibonacci", handler)
 
-	http.ListenAndServe(fmt.Sprintf(":%d", *port), nil)
+	logger.Info("starting http server", zap.Int("port", *port))
+	err = http.ListenAndServe(fmt.Sprintf(":%d", *port), nil)
+	if err != nil {
+		logger.Fatal("error starting http server", zap.Error(err))
+	}
 }
