@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.uber.org/zap"
 )
 
@@ -35,6 +36,7 @@ func main() {
 	handler := Handler()
 	handler = LoggingMiddleware(logger, handler)
 
+	http.Handle("/metrics", promhttp.Handler())
 	http.Handle("/fibonacci", handler)
 
 	// sugaredLogger := logger.Sugar()
