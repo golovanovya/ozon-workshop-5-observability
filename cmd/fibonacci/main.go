@@ -35,6 +35,7 @@ func main() {
 
 	handler := Handler()
 	handler = LoggingMiddleware(logger, handler)
+	handler = MetricsMiddleware(handler)
 
 	http.Handle("/metrics", promhttp.Handler())
 	http.Handle("/fibonacci", handler)
