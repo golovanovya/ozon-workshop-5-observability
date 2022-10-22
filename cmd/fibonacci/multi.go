@@ -8,34 +8,68 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
+	"golang.org/x/sync/errgroup"
 )
 
 func MultiHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
+		processSmth(ctx)
+
 		nums := r.URL.Query()["ns"]
 
+		span := opentracing.SpanFromContext(ctx)
+		if span != nil {
+			span.LogKV("message", "got nums", "nums", nums)
+		}
+
 		resText := strings.Builder{}
+		var lock sync.Mutex
+
 		if len(nums) == 0 {
 			w.WriteHeader(http.StatusInternalServerError)
 			fmt.Fprintln(w, "no numbers in request")
 		}
-		for _, num := range nums {
-			res, err := requestAnotherService(ctx, num)
-			if err != nil {
-				w.WriteHeader(http.StatusInternalServerError)
-				fmt.Fprintln(w, err)
-				return
-			}
 
-			fmt.Fprintf(&resText, "fib(%s) = %s\n", num, res)
+		eg, egCtx := errgroup.WithContext(ctx)
+
+		for _, num := range nums {
+			num := num
+			eg.Go(func() error {
+				res, err := requestAnotherService(egCtx, num)
+				if err != nil {
+					return err
+				}
+
+				lock.Lock()
+				fmt.Fprintf(&resText, "fib(%s) = %s\n", num, res)
+				lock.Unlock()
+
+				return nil
+			})
 		}
+
+		err := eg.Wait()
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintln(w, err)
+		}
+
 		w.Write([]byte(resText.String()))
 	})
+}
+
+func processSmth(ctx context.Context) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "processSmth")
+	defer span.Finish()
+
+	time.Sleep(time.Millisecond * 1)
 }
 
 var errStatusCode = errors.New("wrong status code")
