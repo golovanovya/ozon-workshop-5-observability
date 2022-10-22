@@ -14,11 +14,18 @@ var (
 		Subsystem: "http",
 		Name:      "in_flight_requests_total",
 	})
+	RequestsCount = promauto.NewCounter(prometheus.CounterOpts{
+		Namespace: "ozon",
+		Subsystem: "http",
+		Name:      "requests_total",
+	})
 )
 
 func MetricsMiddleware(next http.Handler) http.Handler {
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		wrapper := NewResponseWrapper(w)
+
+		RequestsCount.Inc()
 
 		next.ServeHTTP(wrapper, r)
 	})
