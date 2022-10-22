@@ -11,8 +11,9 @@ import (
 )
 
 var (
-	port      = flag.Int("port", 8080, "the port to listen")
-	develMode = flag.Bool("devel", false, "development mode")
+	port        = flag.Int("port", 8080, "the port to listen")
+	develMode   = flag.Bool("devel", false, "development mode")
+	serviceName = flag.String("service", "fibonacci", "the name of our service")
 )
 
 func Handler() http.Handler {
@@ -32,10 +33,12 @@ func main() {
 	flag.Parse()
 
 	logger := initLogger()
+	initTracing(logger)
 
 	handler := Handler()
 	handler = LoggingMiddleware(logger, handler)
 	handler = MetricsMiddleware(handler)
+	handler = TracingMiddleware(handler)
 
 	http.Handle("/metrics", promhttp.Handler())
 	http.Handle("/fibonacci", handler)
