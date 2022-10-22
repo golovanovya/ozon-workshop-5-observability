@@ -42,8 +42,13 @@ func main() {
 	handler = MetricsMiddleware(handler)
 	handler = TracingMiddleware(handler)
 
+	multiHandler := MultiHandler()
+	multiHandler = LoggingMiddleware(logger, multiHandler)
+	multiHandler = TracingMiddleware(multiHandler)
+
 	http.Handle("/metrics", promhttp.Handler())
 	http.Handle("/fibonacci", handler)
+	http.Handle("/multi", multiHandler)
 
 	// sugaredLogger := logger.Sugar()
 	// sugaredLogger.Infow("starting http server", "port", *port)
