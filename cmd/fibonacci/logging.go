@@ -12,7 +12,11 @@ func initLogger() *zap.Logger {
 	if *develMode {
 		logger, err = zap.NewDevelopment()
 	} else {
-		logger, err = zap.NewProduction()
+		cfg := zap.NewProductionConfig()
+		cfg.DisableCaller = true
+		cfg.DisableStacktrace = true
+		cfg.Level = zap.NewAtomicLevelAt(zap.InfoLevel)
+		logger, err = cfg.Build()
 	}
 	if err != nil {
 		log.Fatal("cannot init zap", err)
