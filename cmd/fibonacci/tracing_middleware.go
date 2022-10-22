@@ -49,5 +49,8 @@ func TracingMiddleware(next http.Handler) http.Handler {
 		}
 
 		next.ServeHTTP(wrapper, r)
+
+		ext.HTTPStatusCode.Set(span, uint16(wrapper.statusCode))
+		ext.Error.Set(span, wrapper.statusCode != 200)
 	})
 }
