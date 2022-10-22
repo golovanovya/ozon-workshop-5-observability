@@ -17,10 +17,11 @@ var (
 )
 
 func MetricsMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		wrapper := NewResponseWrapper(w)
 
-		next = promhttp.InstrumentHandlerInFlight(InFlightRequests, next)
 		next.ServeHTTP(wrapper, r)
 	})
+	wrappedHandler := promhttp.InstrumentHandlerInFlight(InFlightRequests, handler)
+	return wrappedHandler
 }
