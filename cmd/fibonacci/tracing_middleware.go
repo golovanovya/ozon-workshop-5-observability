@@ -31,6 +31,7 @@ func TracingMiddleware(next http.Handler) http.Handler {
 
 		wrapper := NewResponseWrapper(w)
 
+		r = r.WithContext(ctx)
 		next.ServeHTTP(wrapper, r)
 	})
 }

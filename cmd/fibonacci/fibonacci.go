@@ -1,10 +1,12 @@
 package main
 
-func getNumber(n int) int {
+import "context"
+
+func getNumber(ctx context.Context, n int) int {
 	switch n {
 	case 0, 1:
 		return n
 	default:
-		return getNumber(n-1) + getNumber(n-2)
+		return getNumber(ctx, n-1) + getNumber(ctx, n-2)
 	}
 }

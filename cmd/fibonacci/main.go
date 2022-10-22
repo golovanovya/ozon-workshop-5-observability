@@ -18,6 +18,8 @@ var (
 
 func Handler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
 		numStr := r.URL.Query().Get("n")
 		num, err := strconv.Atoi(numStr)
 		if err != nil || num < 0 {
@@ -25,7 +27,7 @@ func Handler() http.Handler {
 			return
 		}
 
-		fmt.Fprint(w, getNumber(num))
+		fmt.Fprint(w, getNumber(ctx, num))
 	})
 }
 
