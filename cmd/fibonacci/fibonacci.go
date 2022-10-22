@@ -1,8 +1,15 @@
 package main
 
-import "context"
+import (
+	"context"
+
+	"github.com/opentracing/opentracing-go"
+)
 
 func getNumber(ctx context.Context, n int) int {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "getNumber")
+	defer span.Finish()
+
 	switch n {
 	case 0, 1:
 		return n
